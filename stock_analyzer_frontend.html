@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stock Analyzer - Frontend</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #eef2f5; }
+    input, button { padding: 10px; font-size: 16px; }
+    .result { margin-top: 20px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+  </style>
+</head>
+<body>
+  <h2>📊 Indian Stock Analyzer</h2>
+  <input type="text" id="ticker" placeholder="Enter stock symbol (e.g., RELIANCE)" />
+  <button onclick="analyzeStock()">Analyze</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    async function analyzeStock() {
+      const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+      const symbol = ticker.endsWith('.NS') ? ticker : ticker + '.NS';
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '⏳ Loading...';
+
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/analyze?symbol=${symbol}`);
+        const data = await response.json();
+
+        if (data.error) {
+          resultDiv.innerHTML = `❌ Error: ${data.error}`;
+          return;
+        }
+
+        resultDiv.innerHTML = `
+          <strong>Symbol:</strong> ${data.symbol}<br>
+          <strong>Price:</strong> ₹${data.price}<br>
+          <strong>P/E Ratio:</strong> ${data.pe}<br>
+          <strong>P/B Ratio:</strong> ${data.pb}<br>
+          <strong>ROE:</strong> ${data.roe.toFixed(2)}%<br>
+          <hr>
+          <strong>Intrinsic Value:</strong> ₹${data.intrinsic}<br>
+          <strong>Buy Below:</strong> ₹${data.buy_below}<br>
+          <strong>Sell Above:</strong> ₹${data.sell_above}<br>
+          <h3>✅ Recommendation: ${data.recommendation}</h3>
+        `;
+      } catch (err) {
+        resultDiv.innerHTML = `❌ Error fetching data. Check backend.`;
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
